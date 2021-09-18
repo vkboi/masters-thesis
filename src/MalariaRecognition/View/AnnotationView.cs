@@ -4,7 +4,7 @@ using System.Data;
 using System.Drawing;
 using System.Linq;
 using System.Windows.Forms;
-using MalariaRecognition.Controller;
+using MalariaRecognition.BackendLogic;
 using MalariaRecognition.Model;
 
 namespace MalariaRecognition.View
@@ -12,9 +12,10 @@ namespace MalariaRecognition.View
     public partial class AnnotationView : Form
     {
 
-        private AnnotationController controller = new AnnotationController();
+        private RegionProposerManager manager = new RegionProposerManager();
 
         private string annotationPath;
+        private string imagePath;
 
         private BindingList<BoundingBox> boundingBoxes = new BindingList<BoundingBox>();
         private BindingList<AnnotationClass> classes;
@@ -34,7 +35,8 @@ namespace MalariaRecognition.View
         private void AnnotationView_Load(object sender, EventArgs e)
         {
             dgvAnnotations.DataSource = boundingBoxes;
-            dgvAnnotations.Columns["ToRow"].Visible = false;
+            dgvAnnotations.Columns["Row"].Visible = false;
+            dgvAnnotations.Columns["ModelInput"].Visible = false;
 
             classes = new BindingList<AnnotationClass>(Enum.GetNames(typeof(Category)).Select(x => new AnnotationClass { Name = x }).ToList());
 
@@ -53,6 +55,8 @@ namespace MalariaRecognition.View
             {
                 pbCurrentImage.Image = plainImg;
                 bboxImg = (Image)plainImg.Clone();
+                imagePath = FileCommon.LastOpenedFilePath;
+                boundingBoxes.Clear();
                 annotationPath = null;
             }
         }
@@ -91,7 +95,12 @@ namespace MalariaRecognition.View
 
         private void tsmiApproximateBBoxes_Click(object sender, EventArgs e)
         {
+            foreach (BoundingBox bbox in manager.GetBoundingBoxProposals(imagePath))
+            {
+                boundingBoxes.Add(bbox);
+            }
 
+            RenderBoundingBoxes();
         }
 
         private void pbCurrentImage_MouseDown(object sender, MouseEventArgs e)
@@ -187,7 +196,7 @@ namespace MalariaRecognition.View
             {
                 foreach (BoundingBox bbox in boundingBoxes)
                 {
-                    using (Pen pen = new Pen(bbox.Category.GetColor(), 5))
+                    using (Pen pen = new Pen(bbox.Category?.GetColor() ?? Color.Black, 5))
                     {
                         graphics.DrawRectangle(pen, new Rectangle(bbox.X, bbox.Y, bbox.Width, bbox.Height));
                     }
@@ -223,17 +232,30 @@ namespace MalariaRecognition.View
             }
         }
 
-        private void dgvAnnotations_RowsRemoved(object sender, DataGridViewRowsRemovedEventArgs e)
-        {
-            boundingBoxes.RemoveAt(e.RowIndex);
-        }
-
         private void dgvClassNames_CellFormatting(object sender, DataGridViewCellFormattingEventArgs e)
         {
             if (dgvClassNames.Columns[e.ColumnIndex].Name == "Color")
             {
                 e.CellStyle.BackColor = ((Category)Enum.Parse(typeof(Category), (string)dgvClassNames.Rows[e.RowIndex].Cells["Name"].Value)).GetColor();
             }
+        }
+
+        private void dgvAnnotations_CellValueChanged(object sender, DataGridViewCellEventArgs e)
+        {
+            BoundingBox bbox = boundingBoxes[e.RowIndex];
+            DataGridViewRow modifiedRow = dgvAnnotations.Rows[e.RowIndex];
+            bbox.X = (int)modifiedRow.Cells["X"].Value;
+            bbox.Y = (int)modifiedRow.Cells["Y"].Value;
+            bbox.Width = (int)modifiedRow.Cells["Width"].Value;
+            bbox.Height = (int)modifiedRow.Cells["Height"].Value;
+            bbox.Category = (Category)modifiedRow.Cells["Category"].Value;
+
+            RenderBoundingBoxes();
+        }
+
+        private void dgvAnnotations_UserDeletedRow(object sender, DataGridViewRowEventArgs e)
+        {
+            RenderBoundingBoxes();
         }
     }
 }

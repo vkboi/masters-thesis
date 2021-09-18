@@ -8,10 +8,26 @@
     <OutputType>WinExe</OutputType>
     <RootNamespace>MalariaRecognition</RootNamespace>
     <AssemblyName>MalariaRecognition</AssemblyName>
-    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
     <Deterministic>true</Deterministic>
+    <PublishUrl>publish\</PublishUrl>
+    <Install>true</Install>
+    <InstallFrom>Disk</InstallFrom>
+    <UpdateEnabled>false</UpdateEnabled>
+    <UpdateMode>Foreground</UpdateMode>
+    <UpdateInterval>7</UpdateInterval>
+    <UpdateIntervalUnits>Days</UpdateIntervalUnits>
+    <UpdatePeriodically>false</UpdatePeriodically>
+    <UpdateRequired>false</UpdateRequired>
+    <MapFileExtensions>true</MapFileExtensions>
+    <ApplicationRevision>0</ApplicationRevision>
+    <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
+    <IsWebBootstrapper>false</IsWebBootstrapper>
+    <UseApplicationTrust>false</UseApplicationTrust>
+    <BootstrapperEnabled>true</BootstrapperEnabled>
+    <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -32,19 +48,10 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
+  <PropertyGroup>
+    <StartupObject>MalariaRecognition.Program</StartupObject>
+  </PropertyGroup>
   <ItemGroup>
-    <Reference Include="IronPython, Version=2.7.11.0, Culture=neutral, PublicKeyToken=7f709c5b713576e1, processorArchitecture=MSIL">
-      <HintPath>packages\IronPython.2.7.11\lib\net45\IronPython.dll</HintPath>
-    </Reference>
-    <Reference Include="IronPython.Modules, Version=2.7.11.0, Culture=neutral, PublicKeyToken=7f709c5b713576e1, processorArchitecture=MSIL">
-      <HintPath>packages\IronPython.2.7.11\lib\net45\IronPython.Modules.dll</HintPath>
-    </Reference>
-    <Reference Include="IronPython.SQLite, Version=2.7.11.0, Culture=neutral, PublicKeyToken=7f709c5b713576e1, processorArchitecture=MSIL">
-      <HintPath>packages\IronPython.2.7.11\lib\net45\IronPython.SQLite.dll</HintPath>
-    </Reference>
-    <Reference Include="IronPython.Wpf, Version=2.7.11.0, Culture=neutral, PublicKeyToken=7f709c5b713576e1, processorArchitecture=MSIL">
-      <HintPath>packages\IronPython.2.7.11\lib\net45\IronPython.Wpf.dll</HintPath>
-    </Reference>
     <Reference Include="Microsoft.Dynamic, Version=1.3.0.0, Culture=neutral, PublicKeyToken=7f709c5b713576e1, processorArchitecture=MSIL">
       <HintPath>packages\DynamicLanguageRuntime.1.3.0\lib\net45\Microsoft.Dynamic.dll</HintPath>
     </Reference>
@@ -68,12 +75,15 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Common\FileCommon.cs" />
-    <Compile Include="Controller\AnnotationController.cs" />
-    <Compile Include="Controller\ClassificationController.cs" />
+    <Compile Include="BackendLogic\RegionProposerManager.cs" />
+    <Compile Include="BackendLogic\ClassificationManager.cs" />
+    <Compile Include="Common\ProcessCommon.cs" />
     <Compile Include="Model\Annotation.cs" />
     <Compile Include="Model\AnnotationClass.cs" />
     <Compile Include="Model\BoundingBox.cs" />
     <Compile Include="Model\Category.cs" />
+    <Compile Include="Model\PredictedClass.cs" />
+    <Compile Include="Model\Prediction.cs" />
     <Compile Include="View\AnnotationView.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -86,15 +96,15 @@
     <Compile Include="View\ClassificationView.Designer.cs">
       <DependentUpon>ClassificationView.cs</DependentUpon>
     </Compile>
-    <Compile Include="MainView.cs">
+    <Compile Include="View\MainView.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="MainView.Designer.cs">
+    <Compile Include="View\MainView.Designer.cs">
       <DependentUpon>MainView.cs</DependentUpon>
     </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <EmbeddedResource Include="MainView.resx">
+    <EmbeddedResource Include="View\MainView.resx">
       <DependentUpon>MainView.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
@@ -105,9 +115,13 @@
     <Compile Include="Properties\Resources.Designer.cs">
       <AutoGen>True</AutoGen>
       <DependentUpon>Resources.resx</DependentUpon>
+      <DesignTime>True</DesignTime>
     </Compile>
     <EmbeddedResource Include="View\AnnotationView.resx">
       <DependentUpon>AnnotationView.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="View\ClassificationView.resx">
+      <DependentUpon>ClassificationView.cs</DependentUpon>
     </EmbeddedResource>
     <None Include="packages.config" />
     <None Include="Properties\Settings.settings">
@@ -122,6 +136,26 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <BootstrapperPackage Include=".NETFramework,Version=v4.7.2">
+      <Visible>False</Visible>
+      <ProductName>Microsoft .NET Framework 4.7.2 %28x86 and x64%29</ProductName>
+      <Install>true</Install>
+    </BootstrapperPackage>
+    <BootstrapperPackage Include="Microsoft.Net.Framework.3.5.SP1">
+      <Visible>False</Visible>
+      <ProductName>.NET Framework 3.5 SP1</ProductName>
+      <Install>false</Install>
+    </BootstrapperPackage>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="predict.py">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="segmentation.py">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

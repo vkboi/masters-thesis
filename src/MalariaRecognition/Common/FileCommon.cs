@@ -26,8 +26,13 @@ namespace MalariaRecognition
         private const string CLASSES_LOAD_TITLE = "Osztályok betöltése";
         private const string CLASSES_FITLER = "Szöveges fájlok (*.txt)|*.txt";
 
+        private const string PYTHON_OPEN_TITLE = "Python interpreter kiválasztása";
+        private const string PYTHON_FILTER = "Futtatható fájlok (*.exe)|*.exe";
+
         private static OpenFileDialog ofd;
         private static SaveFileDialog sfd;
+
+        public static string LastOpenedFilePath => ofd.FileName;
 
         public static Image LoadImage()
         {
@@ -68,10 +73,10 @@ namespace MalariaRecognition
             {
                 lastAnnotationOpenDir = Path.GetDirectoryName(ofd.FileName);
                 path = ofd.FileName;
-                annotation.FromFile(File.ReadAllText(ofd.FileName));
+                annotation.FromFile(ofd.FileName);
             }                
 
-            return annotation.BoundingBoxes.Count > 0 ? annotation : null;
+            return (annotation?.BoundingBoxes?.Count ?? 0) > 0 ? annotation : null;
         }
 
         public static void SaveAnnotation(Annotation annotation, ref string path)
@@ -88,13 +93,13 @@ namespace MalariaRecognition
             {
                 lastAnnotationSaveDir = Path.GetDirectoryName(sfd.FileName);
                 path = sfd.FileName;
-                File.WriteAllText(sfd.FileName, annotation.ToFileContent);
+                File.WriteAllText(sfd.FileName, annotation.FileContent);
             }
         }
 
         public static void SaveAnnotationSilent(Annotation annotation, string path)
         {
-            File.WriteAllText(path, annotation.ToFileContent);
+            File.WriteAllText(path, annotation.FileContent);
         }
 
         public static List<string> LoadClasses()
@@ -114,6 +119,18 @@ namespace MalariaRecognition
             }
 
             return new List<string>();
+        }
+
+        public static string SelectPythonExecutable()
+        {
+            ofd = new OpenFileDialog
+            {
+                Filter = PYTHON_FILTER,
+                Title = PYTHON_OPEN_TITLE,
+                InitialDirectory = Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles)
+            };
+
+            return ofd.ShowDialog() == DialogResult.OK ? ofd.FileName : null;
         }
     }
 }

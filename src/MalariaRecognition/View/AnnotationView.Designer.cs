@@ -183,10 +183,10 @@ namespace MalariaRecognition.View
             this.dgvAnnotations.Location = new System.Drawing.Point(1652, 27);
             this.dgvAnnotations.MultiSelect = false;
             this.dgvAnnotations.Name = "dgvAnnotations";
-            this.dgvAnnotations.RowHeadersVisible = false;
             this.dgvAnnotations.Size = new System.Drawing.Size(240, 612);
             this.dgvAnnotations.TabIndex = 5;
-            this.dgvAnnotations.RowsRemoved += new System.Windows.Forms.DataGridViewRowsRemovedEventHandler(this.dgvAnnotations_RowsRemoved);
+            this.dgvAnnotations.CellValueChanged += new System.Windows.Forms.DataGridViewCellEventHandler(this.dgvAnnotations_CellValueChanged);
+            this.dgvAnnotations.UserDeletedRow += new System.Windows.Forms.DataGridViewRowEventHandler(this.dgvAnnotations_UserDeletedRow);
             // 
             // AnnotationView
             // 

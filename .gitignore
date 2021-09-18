@@ -348,3 +348,21 @@ MigrationBackup/
 
 # Ionide (cross platform F# VS Code tools) working folder
 .ionide/
+
+# Malaria dataset
+Images/
+Annotations/
+
+# Packed files
+*.rar
+*.zip
+
+# Neural network save files
+*.h5
+model.json
+
+# Other ignored files
+*.pdf
+*.txt
+*.png
+Mask_RCNN-master/

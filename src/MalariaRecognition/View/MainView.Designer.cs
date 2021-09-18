@@ -1,5 +1,5 @@
 ﻿
-namespace MalariaRecognition
+namespace MalariaRecognition.View
 {
     partial class MainView
     {

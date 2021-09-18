@@ -1,8 +1,7 @@
 ﻿using System;
 using System.Windows.Forms;
-using MalariaRecognition.View;
 
-namespace MalariaRecognition
+namespace MalariaRecognition.View
 {
     public partial class MainView : Form
     {
