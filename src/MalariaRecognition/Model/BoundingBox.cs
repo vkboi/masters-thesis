@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Drawing;
 
 namespace MalariaRecognition.Model
 {
@@ -9,6 +10,7 @@ namespace MalariaRecognition.Model
         public int Width { get; set; }
         public int Height { get; set; }
         public Category? Category { get; set; }
+        public bool IsSelected { get; set; }
 
         public string Row => $"{(int)Category};{X};{Y};{Width};{Height}";
         public string ModelInput => $"{Y} {Y + Height} {X} {X + Width}";
@@ -32,6 +34,18 @@ namespace MalariaRecognition.Model
             {
                 Category = (Category)Convert.ToInt32(vals[0]);
             }
+        }
+
+        public bool IsPointOnFrame(Point point)
+        {
+            //bool b1 = point.X == X && Y <= point.Y && point.Y <= Y + Height;
+            //bool b2 = point.X == X + Width && Y <= point.Y && point.Y <= Y + Height;
+            //bool b3 = point.Y == Y && X <= point.X && point.X <= X + Width;
+            //bool b4 = point.Y == Y + Height && X <= point.X && point.X <= X + Width;
+            return Math.Abs(point.X - X) <= 5 && Y <= point.Y && point.Y <= Y + Height ||
+                   Math.Abs(point.X - X + Width) <= 5 && Y <= point.Y && point.Y <= Y + Height ||
+                   Math.Abs(point.Y - Y) <= 5 && X <= point.X && point.X <= X + Width ||
+                   Math.Abs(point.Y - Y + Height) <= 5 && X <= point.X && point.X <= X + Width;
         }
     }
 }

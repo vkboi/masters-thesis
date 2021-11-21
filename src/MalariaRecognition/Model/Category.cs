@@ -23,8 +23,13 @@ namespace MalariaRecognition.Model
             }
         }
 
-        public static Color GetColor(this Category c)
+        public static Color GetColor(this Category c, bool isSelected = false)
         {
+            if (isSelected)
+            {
+                return Color.White;
+            }
+
             switch (c)
             {
                 case Category.RedBloodCell: return Color.Red;

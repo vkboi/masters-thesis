@@ -11,6 +11,9 @@ namespace MalariaRecognition.View
 {
     public partial class AnnotationView : Form
     {
+        private Color CrosshairColor => Color.DarkGray;
+        private Color HighlightColor => Color.White;
+
 
         private RegionProposerManager manager = new RegionProposerManager();
 
@@ -23,7 +26,8 @@ namespace MalariaRecognition.View
         private Image plainImg;
         private Image bboxImg;
         
-        private bool isDrawingBox;
+        private bool isDrawingCrosshair;
+        private bool isDrawingHighlight;
 
         private Point bboxStart;
 
@@ -105,15 +109,16 @@ namespace MalariaRecognition.View
 
         private void pbCurrentImage_MouseDown(object sender, MouseEventArgs e)
         {
-            if (isDrawingBox)
+            if (isDrawingCrosshair)
             {
                 bboxStart = e.Location;
+                isDrawingHighlight = true;
             }
         }
 
         private void pbCurrentImage_MouseUp(object sender, MouseEventArgs e)
         {
-            if (isDrawingBox)
+            if (isDrawingCrosshair)
             {
                 int width = Math.Abs(bboxStart.X - e.Location.X);
                 int height = Math.Abs(bboxStart.Y - e.Location.Y);
@@ -131,7 +136,8 @@ namespace MalariaRecognition.View
                     RenderBoundingBoxes();
                 }
 
-                isDrawingBox = false;
+                isDrawingCrosshair = false;
+                isDrawingHighlight = false;
             }
         }
 
@@ -139,7 +145,7 @@ namespace MalariaRecognition.View
         {
             if (e.KeyCode == Keys.Escape)
             {
-                isDrawingBox = false;
+                isDrawingCrosshair = false;
                 Cursor.Current = Cursors.Arrow;
             }
             else if (e.KeyCode == Keys.Delete)
@@ -147,6 +153,7 @@ namespace MalariaRecognition.View
                 if (dgvAnnotations.SelectedRows.Count > 0)
                 {
                     dgvAnnotations.Rows.Remove(dgvAnnotations.SelectedRows[0]);
+                    RenderBoundingBoxes();
                 }
             }
             else if (e.Modifiers == Keys.Control)
@@ -170,7 +177,7 @@ namespace MalariaRecognition.View
                 }
                 else if (e.KeyCode == Keys.N)
                 {
-                    isDrawingBox = !isDrawingBox;
+                    isDrawingCrosshair = !isDrawingCrosshair;
                 }
             }
         }
@@ -178,7 +185,7 @@ namespace MalariaRecognition.View
         private void pbCurrentImage_MouseMove(object sender, MouseEventArgs e)
         {
             RenderImage();
-            if (isDrawingBox)
+            if (isDrawingCrosshair)
             {
                 Cursor.Current = Cursors.Cross;
                 tsslNewAnnotationData.Text = $"X: {Math.Min(bboxStart.X, e.Location.X)}, Y: {Math.Min(bboxStart.Y, e.Location.Y)}, W: {Math.Abs(bboxStart.X - e.Location.X)}, H: {Math.Abs(bboxStart.Y - e.Location.Y)}";
@@ -196,7 +203,7 @@ namespace MalariaRecognition.View
             {
                 foreach (BoundingBox bbox in boundingBoxes)
                 {
-                    using (Pen pen = new Pen(bbox.Category?.GetColor() ?? Color.Black, 5))
+                    using (Pen pen = new Pen(bbox.Category?.GetColor(bbox.IsSelected) ?? Color.Black, 5))
                     {
                         graphics.DrawRectangle(pen, new Rectangle(bbox.X, bbox.Y, bbox.Width, bbox.Height));
                     }
@@ -208,16 +215,25 @@ namespace MalariaRecognition.View
            
         private void RenderImage()
         {
-            if (isDrawingBox)
+            if (isDrawingCrosshair)
             {
                 Bitmap bitmap = new Bitmap(bboxImg);
                 using (Graphics graphics = Graphics.FromImage(bitmap))
-                using (Pen pen = new Pen(Color.DarkGray, 1))
+                using (Pen pen = new Pen(CrosshairColor, 1))
+                using (Pen highlightPen = new Pen(HighlightColor, 3))
                 {
                     int xOffset = pbCurrentImage.Location.X;
                     int yOffset = pbCurrentImage.Location.Y + menuStrip.Height;
 
                     Point cursorPos = new Point(Cursor.Position.X - xOffset, Cursor.Position.Y - yOffset);
+
+                    int width = Math.Abs(bboxStart.X - cursorPos.X);
+                    int height = Math.Abs(bboxStart.Y - cursorPos.Y);
+
+                    if (isDrawingHighlight)
+                    {
+                        graphics.DrawRectangle(highlightPen, Math.Min(bboxStart.X, cursorPos.X), Math.Min(bboxStart.Y, cursorPos.Y), width, height);
+                    }
 
                     graphics.DrawLine(pen, cursorPos, new Point(0, Cursor.Position.Y - yOffset));
                     graphics.DrawLine(pen, cursorPos, new Point(pbCurrentImage.Width, Cursor.Position.Y - yOffset));
@@ -253,9 +269,38 @@ namespace MalariaRecognition.View
             RenderBoundingBoxes();
         }
 
-        private void dgvAnnotations_UserDeletedRow(object sender, DataGridViewRowEventArgs e)
+        private void EditBoundingBox(BoundingBox box)
         {
-            RenderBoundingBoxes();
+            if (box != null)
+            {
+                box.IsSelected = true;
+                RenderBoundingBoxes();
+
+                AnnotationEditView aev = new AnnotationEditView
+                {
+                    OriginalBoundingBox = box
+                };
+
+                aev.ShowDialog();
+
+                box.IsSelected = false;
+                RenderBoundingBoxes();
+            }
+        }
+
+        private void pbCurrentImage_MouseDoubleClick(object sender, MouseEventArgs e)
+        {
+            BoundingBox selected = boundingBoxes.Where(x => x.IsPointOnFrame(e.Location)).FirstOrDefault();
+
+            EditBoundingBox(selected);
+        }
+
+        private void dgvAnnotations_CellDoubleClick(object sender, DataGridViewCellEventArgs e)
+        {
+            if (e.RowIndex != -1)
+            {
+                EditBoundingBox(boundingBoxes[e.RowIndex]);
+            }
         }
     }
 }

@@ -84,6 +84,12 @@
     <Compile Include="Model\Category.cs" />
     <Compile Include="Model\PredictedClass.cs" />
     <Compile Include="Model\Prediction.cs" />
+    <Compile Include="View\AnnotationEditView.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="View\AnnotationEditView.Designer.cs">
+      <DependentUpon>AnnotationEditView.cs</DependentUpon>
+    </Compile>
     <Compile Include="View\AnnotationView.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -104,6 +110,9 @@
     </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <EmbeddedResource Include="View\AnnotationEditView.resx">
+      <DependentUpon>AnnotationEditView.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="View\MainView.resx">
       <DependentUpon>MainView.cs</DependentUpon>
     </EmbeddedResource>

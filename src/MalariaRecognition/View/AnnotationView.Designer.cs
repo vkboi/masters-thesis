@@ -59,6 +59,7 @@ namespace MalariaRecognition.View
             this.pbCurrentImage.Size = new System.Drawing.Size(1634, 989);
             this.pbCurrentImage.TabIndex = 0;
             this.pbCurrentImage.TabStop = false;
+            this.pbCurrentImage.MouseDoubleClick += new System.Windows.Forms.MouseEventHandler(this.pbCurrentImage_MouseDoubleClick);
             this.pbCurrentImage.MouseDown += new System.Windows.Forms.MouseEventHandler(this.pbCurrentImage_MouseDown);
             this.pbCurrentImage.MouseMove += new System.Windows.Forms.MouseEventHandler(this.pbCurrentImage_MouseMove);
             this.pbCurrentImage.MouseUp += new System.Windows.Forms.MouseEventHandler(this.pbCurrentImage_MouseUp);
@@ -183,10 +184,13 @@ namespace MalariaRecognition.View
             this.dgvAnnotations.Location = new System.Drawing.Point(1652, 27);
             this.dgvAnnotations.MultiSelect = false;
             this.dgvAnnotations.Name = "dgvAnnotations";
+            this.dgvAnnotations.ReadOnly = true;
+            this.dgvAnnotations.RowHeadersVisible = false;
+            this.dgvAnnotations.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
             this.dgvAnnotations.Size = new System.Drawing.Size(240, 612);
             this.dgvAnnotations.TabIndex = 5;
+            this.dgvAnnotations.CellDoubleClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.dgvAnnotations_CellDoubleClick);
             this.dgvAnnotations.CellValueChanged += new System.Windows.Forms.DataGridViewCellEventHandler(this.dgvAnnotations_CellValueChanged);
-            this.dgvAnnotations.UserDeletedRow += new System.Windows.Forms.DataGridViewRowEventHandler(this.dgvAnnotations_UserDeletedRow);
             // 
             // AnnotationView
             // 
