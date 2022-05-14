@@ -15,6 +15,8 @@ namespace MalariaRecognition.Model
 
         public void FromFile(string filePath)
         {
+            FilePath = Path.GetFullPath(filePath);
+
             BoundingBoxes = new List<BoundingBox>();
             string content = File.ReadAllText(filePath);
             foreach (string row in content.Split('\n'))

@@ -360,6 +360,7 @@ Annotations/
 # Neural network save files
 *.h5
 model.json
+binary_model.json
 
 # Other ignored files
 *.pdf

@@ -15,7 +15,8 @@ namespace MalariaRecognition.View
         private Color HighlightColor => Color.White;
 
 
-        private RegionProposerManager manager = new RegionProposerManager();
+        private RegionProposerManager regionProposerManager = new RegionProposerManager();
+        private ClassificationManager classificationManager = new ClassificationManager();
 
         private string annotationPath;
         private string imagePath;
@@ -23,6 +24,7 @@ namespace MalariaRecognition.View
         private BindingList<BoundingBox> boundingBoxes = new BindingList<BoundingBox>();
         private BindingList<AnnotationClass> classes;
 
+        private Annotation annotation;
         private Image plainImg;
         private Image bboxImg;
         
@@ -67,7 +69,7 @@ namespace MalariaRecognition.View
 
         private void tsmiLoadAnnotation_Click(object sender, EventArgs e)
         {
-            Annotation annotation = FileCommon.LoadAnnotation(out annotationPath);
+            annotation = FileCommon.LoadAnnotation(out annotationPath);
 
             if (annotation != null && annotation.BoundingBoxes.Count > 0)
             {
@@ -94,12 +96,21 @@ namespace MalariaRecognition.View
 
         private void tsmiApproximateWithClasses_Click(object sender, EventArgs e)
         {
+            boundingBoxes.Clear();
 
+            foreach (Prediction prediction in classificationManager.GetPredictions(imagePath, annotation, true))
+            {
+                boundingBoxes.Add(prediction);
+            }
+
+            RenderBoundingBoxes();
         }
 
         private void tsmiApproximateBBoxes_Click(object sender, EventArgs e)
         {
-            foreach (BoundingBox bbox in manager.GetBoundingBoxProposals(imagePath))
+            boundingBoxes.Clear();
+
+            foreach (BoundingBox bbox in regionProposerManager.GetBoundingBoxProposals(imagePath))
             {
                 boundingBoxes.Add(bbox);
             }

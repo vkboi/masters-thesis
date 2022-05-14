@@ -123,6 +123,8 @@ namespace MalariaRecognition
 
         public static string SelectPythonExecutable()
         {
+            MessageBox.Show("Kérlek válaszd ki a használni kívánt Python interpretert!", "Python", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
+
             ofd = new OpenFileDialog
             {
                 Filter = PYTHON_FILTER,

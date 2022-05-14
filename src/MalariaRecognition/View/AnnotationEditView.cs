@@ -64,7 +64,10 @@ namespace MalariaRecognition.View
             cbCategory.DataSource = Enum.GetValues(typeof(Category));//.Cast<List<Category>>().Select(x => new { Name = x.ToString(), Value = x }).ToList();
             //cbCategory.DisplayMember = "Name";
             //cbCategory.ValueMember = "Value";
-            cbCategory.SelectedIndex = (int)OriginalBoundingBox.Category;
+            if (OriginalBoundingBox.Category.HasValue)
+            {
+                cbCategory.SelectedIndex = (int)OriginalBoundingBox.Category;
+            }
         }
 
         private void btnSave_Click(object sender, EventArgs e)

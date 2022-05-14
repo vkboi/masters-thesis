@@ -36,6 +36,15 @@ namespace MalariaRecognition.Model
             }
         }
 
+        public BoundingBox(Prediction prediction)
+        {
+            X = prediction.X;
+            Y = prediction.Y;
+            Width = prediction.Width;
+            Height = prediction.Height;
+            Category = prediction.Category;
+        }
+
         public bool IsPointOnFrame(Point point)
         {
             //bool b1 = point.X == X && Y <= point.Y && point.Y <= Y + Height;

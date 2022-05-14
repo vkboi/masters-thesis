@@ -10,7 +10,8 @@ namespace MalariaRecognition.Common
 {
     public static class ProcessCommon
     {
-        private const string MIN_PYTHON_VERSION = "3.4.0";
+        private const int MIN_MAIN_PYTHON_VERSION = 3;
+        private const int MIN_MINOR_PYTHON_VERSION = 4;
         private const string REGION_PROPOSER_FILENAME = "segmentation.py";
         private const string CLASSIFIER_FILENAME = "predict.py";
 
@@ -45,9 +46,11 @@ namespace MalariaRecognition.Common
 
                     StreamReader stdout = pythonCheck.StandardOutput;
 
-                    string pythonVersion = stdout.ReadToEnd();
+                    string pythonVersion = stdout.ReadToEnd().Trim().Split(' ')[1];
 
-                    Program.IsPATHPythonOutdated = pythonVersion.Trim().Split(' ')[1].CompareTo(MIN_PYTHON_VERSION) < 0;
+                    int[] versionNumbers = pythonVersion.Split('.').Select(x => Convert.ToInt32(x)).ToArray();
+
+                    Program.IsPATHPythonOutdated = versionNumbers[0] < MIN_MAIN_PYTHON_VERSION || versionNumbers[1] < MIN_MINOR_PYTHON_VERSION;
                     Console.WriteLine(pythonVersion);
                 }
 
@@ -59,7 +62,7 @@ namespace MalariaRecognition.Common
             }
         }
 
-        public static List<BoundingBox> GetBoundingBoxesForImage(string imagePath)
+        private static Annotation GetAnnotationFromFile(string imagePath)
         {
             using (Process regionProposerProcess = new Process
             {
@@ -76,13 +79,27 @@ namespace MalariaRecognition.Common
                 regionProposerProcess.WaitForExit();
                 Annotation a = new Annotation();
                 a.FromFile("annotations.txt");
-                return a.BoundingBoxes;
+                return a;
             }
         }
 
-        public static List<Prediction> GetPredictions(string imagePath, Annotation annotation)
+        public static List<BoundingBox> GetBoundingBoxesForImage(string imagePath)
         {
+            return GetAnnotationFromFile(imagePath).BoundingBoxes;
+        }
+
+        public static List<Prediction> GetPredictions(string imagePath, Annotation annotation, bool isBinary = false)
+        {
+            if (string.IsNullOrEmpty(imagePath))
+            {
+                FileCommon.LoadImage();
+                imagePath = FileCommon.LastOpenedFilePath;
+            }
+
+            annotation = annotation ?? GetAnnotationFromFile(imagePath);
+
             string annotationsPath = "";
+
             if (string.IsNullOrEmpty(annotation.FilePath))
             {
                 annotationsPath = "annotations.txt";
@@ -98,7 +115,7 @@ namespace MalariaRecognition.Common
                 StartInfo = new ProcessStartInfo
                 {
                     FileName = GetPythonFilename(),
-                    Arguments = $"{CLASSIFIER_FILENAME}{((imagePath?.Length ?? 0) == 0 ? "" : $" -i {imagePath} -a {annotationsPath}")}",
+                    Arguments = $"{CLASSIFIER_FILENAME}{((imagePath?.Length ?? 0) == 0 ? "" : $" -i {imagePath} -a {annotationsPath}")}{(isBinary ? " -b" : "")}",
                     UseShellExecute = false,
                     CreateNoWindow = true
                 }
@@ -115,7 +132,7 @@ namespace MalariaRecognition.Common
                     Y = first.Y,
                     Width = first.Width,
                     Height = first.Height,
-                    Category = (Category)Convert.ToInt32(second.Split(' ')[0]),
+                    Category = isBinary ? (Category)(-1 * Convert.ToInt32(second.Split(' ')[0])) : (Category)Convert.ToInt32(second.Split(' ')[0]),
                     Confidence = Convert.ToDouble(second.Split(' ')[1].Replace(".", ","))
                 }).ToList();
             }
