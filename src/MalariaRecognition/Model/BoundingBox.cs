@@ -12,7 +12,7 @@ namespace MalariaRecognition.Model
         public Category? Category { get; set; }
         public bool IsSelected { get; set; }
 
-        public string Row => $"{(int)Category};{X};{Y};{Width};{Height}";
+        public string Row => $"{(int)(Category ?? Model.Category.RedBloodCell)};{X};{Y};{Width};{Height}";
         public string ModelInput => $"{Y} {Y + Height} {X} {X + Width}";
 
         public BoundingBox() { }

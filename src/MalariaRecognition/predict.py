@@ -57,7 +57,10 @@ if __name__ == "__main__":
 		bboxes = []
 		img_path = args["image_path"]
 		for line in annotations_file.readlines():
-			bboxes.append([int(x) for x in line.strip().split(sep=" ")])
+			if args["annotations"] == "annotations.txt":
+				bboxes.append([int(x) for x in line.strip().split(sep=" ")])
+			else:
+				bboxes.append([int(x) for x in line.strip().split(sep=";")])
 		image = cv2.cvtColor(cv2.imread(img_path, cv2.IMREAD_COLOR), cv2.COLOR_BGR2RGB)
 		preds = []
 		for bbox in bboxes:

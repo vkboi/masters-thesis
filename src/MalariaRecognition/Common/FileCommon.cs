@@ -83,7 +83,6 @@ namespace MalariaRecognition
         {
             sfd = new SaveFileDialog
             {
-                CheckFileExists = true,
                 Filter = ANNOTATION_FILTER,
                 Title = ANNOTATION_SAVE_TITLE,
                 InitialDirectory = lastAnnotationSaveDir ?? Environment.GetFolderPath(Environment.SpecialFolder.MyPictures)
